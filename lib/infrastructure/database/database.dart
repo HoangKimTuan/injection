@@ -36,6 +36,16 @@ abstract class BaseDatabaseImplement<M> implements DatabaseHelper<M> {
   @override
   Future<int> save(M) async {
     var dbClient = await db;
+    int id = M.id;
+    List users = await dbClient.rawQuery('select * from User where id = $id');
+    if (users.length > 0) {
+      try {
+        await dbClient.update("User", toMap(M), where: "id = ?", whereArgs: [id]);
+      } catch(e) {
+        e.toString();
+      }
+      return -1;
+    }
     int res = await dbClient.insert("User", toMap(M));
     return res;
   }

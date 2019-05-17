@@ -22,7 +22,7 @@ class BasicPostPresenter implements PostPresenter {
   @override
   void getPosts() async {
     final user = injector.get<UserDatabase>();
-    await user.save(new User(name: "", email: "", id: 3, username: ""));
+    await user.save(new User(name: "", email: "", id: 0, username: "update"));
     final posts = injector.get<PostService>();
     List msg = await posts.getAll();
     this.postViewModel.posts = msg;
