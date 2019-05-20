@@ -7,10 +7,12 @@ import 'package:sqflite/sqflite.dart';
 abstract class DatabaseHelper<M> {
   Future<int> save(M);
   Future<int> delete(M);
+  Future<int> deleteAll(M);
 }
 
 abstract class BaseDatabaseImplement<M> implements DatabaseHelper<M> {
-  static Database _db;
+  Database _db;
+  String table;
 
   Future<Database> get db async {
     if (_db != null) {
@@ -18,6 +20,10 @@ abstract class BaseDatabaseImplement<M> implements DatabaseHelper<M> {
     }
     _db = await initDb();
     return _db;
+  }
+
+  void setTable(String value) {
+    table = value;
   }
 
   initDb() async {
@@ -37,24 +43,31 @@ abstract class BaseDatabaseImplement<M> implements DatabaseHelper<M> {
   Future<int> save(M) async {
     var dbClient = await db;
     int id = M.id;
-    List users = await dbClient.rawQuery('select * from User where id = $id');
+    List users = await dbClient.rawQuery('select * from $table where id = $id');
     if (users.length > 0) {
       try {
-        await dbClient.update("User", toMap(M), where: "id = ?", whereArgs: [id]);
+        await dbClient.update("$table", toMap(M), where: "id = ?", whereArgs: [id]);
       } catch(e) {
         e.toString();
       }
       return -1;
     }
-    int res = await dbClient.insert("User", toMap(M));
+    int res = await dbClient.insert("$table", toMap(M));
     return res;
   }
 
   @override
   Future<int> delete(M) async {
     var dbClient = await db;
-    int res = await dbClient.delete("User");
+    int id = M.id;
+    int res = await dbClient.delete("$table", where: "id = ?", whereArgs: [id]);
     return res;
+  }
+
+  @override
+  Future<int> deleteAll(M) async {
+    final dbClient = await db;
+    dbClient.rawDelete("Delete * from $table");
   }
 
   Map toMap(M object);
